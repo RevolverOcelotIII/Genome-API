@@ -1,11 +1,14 @@
+import sys
 import mysql.connector
+sys.path.append('../')
+from config import DATABASE_URL, DATABASE_PORT, DATABASE_USER, DATABASE_PASSWORD, DATABASE_SCHEMA
 
 db_config = {
-    'host': '169.254.123.97',
-    'port': 3307,
-    'user': 'root',
-    'password': '123456',
-    'database': 'snpfinder'
+    'host': DATABASE_URL,
+    'port': DATABASE_PORT,
+    'user': DATABASE_USER,
+    'password': DATABASE_PASSWORD,
+    'database': DATABASE_SCHEMA
 }
 
 def get_db_connection():

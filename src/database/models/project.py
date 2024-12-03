@@ -36,3 +36,19 @@ def get_project(project_uuid):
     cursor.close()
     connection.close()
     return project
+
+def remove_project_from_database(project_uuid):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM project WHERE uuid = %s", (project_uuid,))
+
+    # Commit para aplicar a remoção
+    connection.commit()
+
+def edit_project_name(project_uuid, project_name):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("UPDATE project SET name=%s WHERE uuid = %s", (project_name, project_uuid,))
+
+    # Commit para aplicar a remoção
+    connection.commit()

@@ -1,16 +1,21 @@
 from database.connector import get_db_connection
 import uuid
 
-def create_sample(project_uuid, sample_name):
+def create_sample(project_uuid, sample_name, genes):
     connection = get_db_connection()
     cursor = connection.cursor()
 
     sample_uuid = str(uuid.uuid4())
 
-    # Inserir um novo usuário no banco de dados
-    cursor.execute("INSERT INTO sample (name, uuid, gene_id, project_id) VALUES (%s, %s, 1, (SELECT id FROM project WHERE uuid = %s))", (sample_name, sample_uuid, project_uuid))
+    # Inserir uma nova amostra no banco de dados
+    cursor.execute("INSERT INTO sample (name, uuid, project_id) VALUES (%s, %s, (SELECT id FROM project WHERE uuid = %s))", (sample_name, sample_uuid, project_uuid))
     connection.commit()
-
+    sample_id = cursor.lastrowid
+    print(sample_id)
+    for gene in genes:
+        gene_id = get_gene_id(gene)
+        cursor.execute("INSERT INTO gene_x_sample (sample_id, gene_id) VALUES (%s, %s)", (sample_id, gene_id))
+    connection.commit()
     # Fechar a conexão
     cursor.close()
     connection.close()
@@ -19,8 +24,16 @@ def create_sample(project_uuid, sample_name):
 def remove_sample_from_database(sample_uuid):
     connection = get_db_connection()
     cursor = connection.cursor()
-
+    cursor.execute("DELETE FROM gene_x_sample WHERE sample_id = (select id from sample where uuid = %s)", (sample_uuid,))
     cursor.execute("DELETE FROM sample WHERE uuid = %s", (sample_uuid,))
+
+    # Commit para aplicar a remoção
+    connection.commit()
+
+def edit_sample_name(sample_uuid, sample_name):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("UPDATE sample SET name=%s WHERE uuid = %s", (sample_name, sample_uuid,))
 
     # Commit para aplicar a remoção
     connection.commit()
@@ -68,3 +81,22 @@ def get_gene_id(gene_name):
     cursor.close()
     connection.close()
     return gene['id']
+
+def get_sample_genes(sample_uuid):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("SELECT gene.name FROM gene inner join gene_x_sample on gene_x_sample.gene_id = gene.id inner join sample on gene_x_sample.sample_id = sample.id WHERE sample.uuid=%s", (sample_uuid,))
+    genes = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+    return genes
+
+def update_sample_process(sample_uuid, state):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("UPDATE sample SET state=%s WHERE uuid = %s", (state, sample_uuid,))
+
+    # Commit para aplicar a remoção
+    connection.commit()
