@@ -1,6 +1,6 @@
 import sys
 import mysql.connector
-sys.path.append('../')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from config import DATABASE_URL, DATABASE_PORT, DATABASE_USER, DATABASE_PASSWORD, DATABASE_SCHEMA
 
 db_config = {
